@@ -25,11 +25,29 @@ A self-hosted, drag-and-drop website CMS: a Next.js (App Router) front end, an E
 
 ## Installation
 
+**npx (no install — always runs the latest version):**
+
 ```bash
 npx modern-cms
 ```
 
-(No global install needed — `npx` fetches and runs the latest version each time. If you prefer a global install: `npm install -g modern-cms && modern-cms`.)
+**npm (global install):**
+
+```bash
+npm install -g modern-cms
+modern-cms
+```
+
+**yarn:**
+
+```bash
+# Yarn Classic (v1)
+yarn global add modern-cms
+modern-cms
+
+# Yarn Berry (v2+)
+yarn dlx modern-cms
+```
 
 ### What the installer asks
 
@@ -65,6 +83,10 @@ npm run dev
 ```
 
 Then open the web app at the URL you chose (default `http://localhost:3000`) and log in at `/admin` with the admin email/password from the wizard.
+
+> **Prefer yarn for the scaffolded project too?** `yarn install` works fine, and `dev`/`db:migrate`/`db:seed` all run correctly (they use `tsx`, which doesn't type-check). The one caveat: yarn's dependency hoisting can occasionally produce a duplicate `@types/express`, which shows up as spurious TypeScript errors only if you run `npm run build` or `tsc` directly — running `npm install` once resolves it.
+>
+> **Logged in with the wrong password?** The admin user is only created the *first* time `db:seed` runs — editing `.env` afterward doesn't retroactively change it. Run `npm run db:reset-admin && npm run db:seed` to delete and recreate it from the current `.env` values.
 
 ## Project layout
 

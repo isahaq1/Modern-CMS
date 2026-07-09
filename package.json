@@ -18,7 +18,8 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "db:migrate": "npm run db:migrate -w apps/api",
-    "db:seed": "npm run db:seed -w apps/api"
+    "db:seed": "npm run db:seed -w apps/api",
+    "db:reset-admin": "npm run db:reset-admin -w apps/api"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

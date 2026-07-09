@@ -18,11 +18,17 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = path.join(__dirname, "..", "template");
 
+// npm's packlist strips any file literally named ".gitignore" out of the published
+// tarball, so the template ships it as "gitignore" — restore the leading dot on scaffold.
+function destName(name) {
+  return name === "gitignore" ? ".gitignore" : name;
+}
+
 function copyDir(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
+    const destPath = path.join(dest, destName(entry.name));
     if (entry.isDirectory()) copyDir(srcPath, destPath);
     else fs.copyFileSync(srcPath, destPath);
   }

@@ -12,14 +12,68 @@ Built as an npm-workspaces monorepo:
 
 ---
 
-## Quick start
+## Installation
 
-### Prerequisites
+There are two ways to get a working project: install the published `modern-cms` package (fastest — an interactive wizard scaffolds everything and writes your `.env` files), or clone this repository directly (for contributing to pg-cms itself). Most people want the first one.
+
+### Option A — Install the `modern-cms` package (recommended)
+
+Works with npx, npm, or yarn — pick whichever you already use.
+
+**npx (no install — always runs the latest version):**
+
+```bash
+npx modern-cms
+```
+
+**npm (global install, then run anytime with just `modern-cms`):**
+
+```bash
+npm install -g modern-cms
+modern-cms
+```
+
+**yarn:**
+
+```bash
+# Yarn Classic (v1)
+yarn global add modern-cms
+modern-cms
+
+# Yarn Berry (v2+) — no global install needed
+yarn dlx modern-cms
+```
+
+The wizard asks for your database (PostgreSQL or MySQL, with host/port/name/username/password), the web app port and API port, your file storage provider (AWS S3, Azure Blob Storage, or Cloudinary, with that provider's credentials), and an admin email/password — then scaffolds a full project and writes working `.env` files. It never runs `npm install`, touches your database, or starts anything by itself; it prints the exact next commands.
+
+```bash
+cd <your-project-dir>
+
+# npm (recommended — see the yarn note below):
+npm install
+npm run db:migrate          # PostgreSQL
+# MySQL installs use schema-push instead, since the bundled migration
+# history is Postgres-specific SQL:
+# npx prisma generate --schema apps/api/prisma/schema.prisma
+# npx prisma db push --schema apps/api/prisma/schema.prisma
+npm run db:seed
+npm run dev
+```
+
+> **Using yarn to install the scaffolded project itself?** `yarn install` works fine, and `npm run dev` / `db:migrate` / `db:seed` all run correctly under a yarn-installed `node_modules` (they invoke `tsx`, which doesn't type-check). The one thing to watch for: yarn's dependency hoisting can occasionally produce a duplicate `@types/express` in the tree, which shows up as spurious TypeScript errors *only* if you run `npm run build` or `tsc` directly. If that happens, running `npm install` once (even alongside your yarn workflow) resolves it — that's yarn's hoisting, not a bug in the project.
+
+See [`packages/modern-cms/README.md`](packages/modern-cms/README.md) for the full prompt-by-prompt reference and configuration details.
+
+### Option B — Clone this repository
+
+For working on pg-cms itself, not for building a site with it.
+
+#### Prerequisites
 
 - Node.js 18+
 - Docker Desktop (for PostgreSQL + MinIO)
 
-### 1. Start the databases
+#### 1. Start the databases
 
 ```bash
 npm run docker:up
@@ -37,7 +91,7 @@ A one-shot init container creates the `pgcms-media` bucket automatically.
 
 > **Port conflicts:** if `docker compose up` fails with "port is already allocated", another container or service owns that port — run `docker ps` to find it, then either stop it or change the host-side port in `docker-compose.yml` **and** the matching URLs in `apps/api/.env`.
 
-### 2. Environment files
+#### 2. Environment files
 
 Two env files are used:
 
@@ -53,7 +107,7 @@ cp .env.example apps/api/.env   # then trim to the API-relevant keys, or keep al
 
 **Important:** the password inside `DATABASE_URL` in `apps/api/.env` must match `POSTGRES_PASSWORD` in the root `.env`. Postgres sets its password the *first* time its data volume is created — changing `.env` later does not change the database password.
 
-### 3. Install, migrate, seed
+#### 3. Install, migrate, seed
 
 ```bash
 npm install
@@ -69,7 +123,7 @@ npx tsx prisma/seed-homepage.ts
 npx tsx prisma/seed-our-charities.ts
 ```
 
-### 4. Run the dev servers
+#### 4. Run the dev servers
 
 ```bash
 npm run dev            # API (port 4000) + web (port 3000) together
@@ -78,7 +132,7 @@ npm run dev:api
 npm run dev:web
 ```
 
-### 5. Log in
+#### 5. Log in
 
 | URL | What |
 |---|---|
@@ -161,6 +215,7 @@ Six scene presets usable in the Hero or the dedicated 3D Background component: *
 | `npm run docker:up` / `npm run docker:down` | Start / stop Postgres + MinIO |
 | `npm run db:migrate` | Apply Prisma migrations (`prisma migrate dev`) |
 | `npm run db:seed` | Seed admin user, theme, sample page |
+| `npm run db:reset-admin` | Delete the admin user matching `SEED_ADMIN_EMAIL` so the next `db:seed` recreates it (e.g. after changing the seed password) |
 
 ---
 
@@ -202,9 +257,9 @@ No builder-chrome changes needed — the palette, inspector, and drag-and-drop p
 
 **`port is already allocated` from Docker** — another container owns the host port. `docker ps`, then stop it or change the port mapping in `docker-compose.yml` + the URLs in `apps/api/.env`.
 
-**"Invalid email or password"** — credentials are case-sensitive; watch for browser autofill inserting a stale saved password. The current values live in `apps/api/.env`.
+**"Invalid email or password"** — credentials are case-sensitive; watch for browser autofill inserting a stale saved password. The current values live in `apps/api/.env` (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`, used only the *first* time `db:seed` creates that user — editing `.env` afterward doesn't change an already-created password). If you scaffolded the project with `modern-cms` before v1.1.3 and your password contains `#`, it was silently truncated by `dotenv`'s comment parsing (fixed in 1.1.3 — update and rescaffold, or run `npm run db:reset-admin && npm run db:seed` to delete and recreate the existing admin user from the current `.env` values, without rescaffolding).
 
 **Prisma `EPERM ... query_engine ... .dll.node` on Windows** — the running API dev server is holding the engine file. Stop it (`netstat -ano | findstr :4000`, then kill that PID), run the migration, restart.
 
 **Dev server "running" but serving stale code** — an orphaned process may still own the port. Verify with `netstat -ano | findstr :3000` (or `:4000`) and kill the listed PID before restarting.
-"# Modern-CMS" 
+
