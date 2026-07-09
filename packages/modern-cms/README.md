@@ -1,40 +1,98 @@
 # modern-cms
 
-A self-hosted, drag-and-drop website CMS — Next.js (App Router) front end, Express + Prisma API, PostgreSQL or MySQL, and pluggable file storage (AWS S3, Azure Blob Storage, or Cloudinary).
+A self-hosted, drag-and-drop website CMS: a Next.js (App Router) front end, an Express + Prisma API, your choice of **PostgreSQL or MySQL**, and pluggable file storage (**AWS S3, Azure Blob Storage, or Cloudinary**). Install it with one command — an interactive wizard scaffolds a complete, working project and writes its `.env` files for you.
 
-## Quick start
+- **npm**: <https://www.npmjs.com/package/modern-cms>
+- **Source**: <https://github.com/isahaq1/Modern-CMS>
+- **Issues**: <https://github.com/isahaq1/Modern-CMS/issues>
 
-```
+## Features
+
+- **Visual page builder** — drag-and-drop containers, a true 2D grid layout (with per-column/row resize), 30+ content blocks (hero, testimonials, pricing tables, video, team, timeline, before/after, and more), responsive breakpoint overrides (desktop/tablet/mobile), GSAP-powered entrance animations, and dark mode.
+- **Content model** — pages with draft/publish/scheduled-publish states, page revisions with restore, page templates, collections (blog/news/events/etc.) with locale support, reusable saved blocks, global header/footer sections.
+- **Internationalization** — per-page locale + translation groups, RTL layout support, a language switcher block.
+- **SEO built in** — sitemap.xml, robots.txt, JSON-LD (WebPage/Article/BreadcrumbList/FAQPage), redirects, per-page meta/OG tags.
+- **Auth & governance** — role-based access (Admin / Editor / Author, with per-resource ownership for Authors), an audit log of every mutating admin action.
+- **Forms & search** — a contact-form block with submission storage and an optional webhook, full-text search (Postgres `tsvector` ranking) across pages and collection items.
+- **Backup** — export/import a single page or the whole site as JSON.
+- **Analytics** — GA4, Plausible, or a custom script snippet, configured from the admin theme settings.
+
+## Requirements
+
+- Node.js 18 or newer
+- A PostgreSQL or MySQL server (local, Docker, or a managed service)
+- Credentials for one file-storage provider: AWS S3 (or any S3-compatible service — MinIO, Cloudflare R2, DigitalOcean Spaces...), Azure Blob Storage, or Cloudinary
+
+## Installation
+
+```bash
 npx modern-cms
 ```
 
-You'll be asked for:
+(No global install needed — `npx` fetches and runs the latest version each time. If you prefer a global install: `npm install -g modern-cms && modern-cms`.)
 
-- Where to create the project
-- Database engine (PostgreSQL or MySQL) — host, database name, username, password
-- File storage provider (AWS S3 / any S3-compatible service, Azure Blob Storage, or Cloudinary) and its credentials
-- Site URLs and an admin login
+### What the installer asks
 
-The installer scaffolds the full project into your target directory and writes working `.env` files for the API and web app. It does **not** run `npm install` or touch your database for you — it prints the exact next commands to run, so nothing happens on your machine without you seeing it first.
+| Step | Prompt | Notes |
+|---|---|---|
+| 1 | Project directory | Must be empty or not yet exist |
+| 2 | Database engine | PostgreSQL or MySQL |
+| 3 | Database host / port / name / username / password | Builds `DATABASE_URL` and rewrites the Prisma schema's datasource for you |
+| 4 | Storage provider | AWS S3 (or S3-compatible) / Azure Blob Storage / Cloudinary |
+| 5 | Provider credentials | Endpoint/keys/bucket for S3, connection string/container for Azure, cloud name/API key/secret for Cloudinary |
+| 6 | Web app port / API port | Defaults `3000` / `4000` |
+| 7 | Public site URL / API URL | Defaults follow whatever ports you picked |
+| 8 | Admin email / password | Leave the password blank to auto-generate one (printed once, at the end) |
 
-## What you get
+The installer only **writes files** — it never runs `npm install`, touches your database, or starts anything. It prints the exact next commands, so nothing happens on your machine without you seeing it first.
 
-- A visual, drag-and-drop page builder (containers, grids, 30+ content blocks, responsive breakpoints, animations, dark mode)
-- Collections (blog/news/etc.), full-text search, SEO (sitemap, JSON-LD, redirects), page revisions and templates
-- Role-based auth (Admin / Editor / Author), audit log, form submissions
-- Media library backed by whichever storage provider you chose
+### After the wizard finishes
 
-## After setup
-
-```
+```bash
 cd <your-project-dir>
 npm install
-npm run db:migrate   # PostgreSQL
-# or, for MySQL (the bundled migration history is Postgres-specific SQL):
+
+# PostgreSQL:
+npm run db:migrate
+
+# MySQL (the bundled migration history is Postgres-specific SQL, so a fresh
+# MySQL install uses schema-push instead of the migration history):
+npx prisma generate --schema apps/api/prisma/schema.prisma
 npx prisma db push --schema apps/api/prisma/schema.prisma
+
 npm run db:seed
 npm run dev
 ```
+
+Then open the web app at the URL you chose (default `http://localhost:3000`) and log in at `/admin` with the admin email/password from the wizard.
+
+## Project layout
+
+The scaffolded project is an npm-workspaces monorepo:
+
+```
+your-project/
+  apps/
+    web/      # Next.js app — public site + /admin builder UI
+    api/      # Express + Prisma API
+  packages/
+    shared/   # Zod schemas, the component registry, and tree helpers shared by both apps
+  docker-compose.yml   # optional local Postgres + MinIO for dev
+```
+
+## Configuration reference
+
+Everything the installer writes lives in `apps/api/.env` and `apps/web/.env.local`. The full list of variables (and what each one does) is documented in `.env.example` at the root of the scaffolded project.
+
+## Contributing / issues
+
+Bug reports and feature requests are welcome — please open an issue at <https://github.com/isahaq1/Modern-CMS/issues>.
+
+## Author
+
+**Md Isahaq**
+Email: [hmisahaq01@gmail.com](mailto:hmisahaq01@gmail.com)
+Phone: +880 1852376598
 
 ## License
 

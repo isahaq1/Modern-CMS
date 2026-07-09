@@ -143,11 +143,13 @@ async function main() {
   }
   const storageEnvLines = buildStorageEnvLines(provider, storageValues);
 
-  // --- Site / admin ---
+  // --- Ports / site / admin ---
   const site = await prompts(
     [
-      { type: "text", name: "siteUrl", message: "Public site URL", initial: "http://localhost:3000" },
-      { type: "text", name: "apiUrl", message: "API URL", initial: "http://localhost:4000" },
+      { type: "text", name: "webPort", message: "Web app port", initial: "3000" },
+      { type: "text", name: "apiPort", message: "API port", initial: "4000" },
+      { type: "text", name: "siteUrl", message: "Public site URL", initial: (_, values) => `http://localhost:${values.webPort}` },
+      { type: "text", name: "apiUrl", message: "API URL", initial: (_, values) => `http://localhost:${values.apiPort}` },
       { type: "text", name: "adminEmail", message: "Admin login email", initial: "admin@example.com" },
       { type: "password", name: "adminPassword", message: "Admin login password (leave blank to generate one)" },
     ],
@@ -163,9 +165,10 @@ async function main() {
     storageProvider: provider,
     storageEnvLines,
     siteUrl: site.siteUrl,
+    apiPort: site.apiPort,
     revalidateSecret: randomSecret(),
   });
-  const webEnv = buildWebEnv({ apiUrl: site.apiUrl, siteUrl: site.siteUrl });
+  const webEnv = buildWebEnv({ apiUrl: site.apiUrl, siteUrl: site.siteUrl, webPort: site.webPort });
   const rootEnv = buildRootEnv({ db, databaseUrl, storageProvider: provider, storageEnvLines });
 
   fs.writeFileSync(path.join(dest, "apps/api/.env"), apiEnv);

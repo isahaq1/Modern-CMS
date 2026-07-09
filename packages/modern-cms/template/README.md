@@ -207,3 +207,4 @@ No builder-chrome changes needed — the palette, inspector, and drag-and-drop p
 **Prisma `EPERM ... query_engine ... .dll.node` on Windows** — the running API dev server is holding the engine file. Stop it (`netstat -ano | findstr :4000`, then kill that PID), run the migration, restart.
 
 **Dev server "running" but serving stale code** — an orphaned process may still own the port. Verify with `netstat -ano | findstr :3000` (or `:4000`) and kill the listed PID before restarting.
+"# Modern-CMS" 

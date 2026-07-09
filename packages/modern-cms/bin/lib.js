@@ -47,7 +47,7 @@ export function buildStorageEnvLines(provider, values) {
   ];
 }
 
-export function buildApiEnv({ databaseUrl, jwtSecret, adminEmail, adminPassword, storageProvider, storageEnvLines, siteUrl, revalidateSecret }) {
+export function buildApiEnv({ databaseUrl, jwtSecret, adminEmail, adminPassword, storageProvider, storageEnvLines, siteUrl, apiPort, revalidateSecret }) {
   return [
     `DATABASE_URL=${databaseUrl}`,
     "",
@@ -65,7 +65,7 @@ export function buildApiEnv({ databaseUrl, jwtSecret, adminEmail, adminPassword,
     ...storageEnvLines,
     "",
     "# --- API ---",
-    "API_PORT=4000",
+    `API_PORT=${apiPort}`,
     `WEB_ORIGIN=${siteUrl}`,
     "",
     "# --- Cache revalidation ---",
@@ -78,8 +78,8 @@ export function buildApiEnv({ databaseUrl, jwtSecret, adminEmail, adminPassword,
   ].join("\n");
 }
 
-export function buildWebEnv({ apiUrl, siteUrl }) {
-  return [`API_URL=${apiUrl}`, `SITE_URL=${siteUrl}`, ""].join("\n");
+export function buildWebEnv({ apiUrl, siteUrl, webPort }) {
+  return [`API_URL=${apiUrl}`, `SITE_URL=${siteUrl}`, `PORT=${webPort}`, ""].join("\n");
 }
 
 export function buildRootEnv({ db, databaseUrl, storageProvider, storageEnvLines }) {

@@ -1,6 +1,6 @@
 {
   "name": "modern-cms",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "Self-hosted, drag-and-drop website CMS (Next.js + Express + Prisma). Interactive installer scaffolds a full project with your choice of PostgreSQL/MySQL and AWS S3/Azure Blob/Cloudinary storage.",
   "type": "module",
   "bin": {
@@ -24,10 +24,21 @@
     "cloudinary"
   ],
   "author": {
-    "name": "Md Isahaq (+880 1852376598)",
-    "email": "hmisahaq01@gmail.com"
+    "name": "Md Isahaq",
+    "email": "hmisahaq01@gmail.com",
+    "url": "https://github.com/isahaq1",
+    "phone": "+880 1852376598"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isahaq1/Modern-CMS.git",
+    "directory": "packages/modern-cms"
+  },
+  "homepage": "https://github.com/isahaq1/Modern-CMS#readme",
+  "bugs": {
+    "url": "https://github.com/isahaq1/Modern-CMS/issues"
+  },
   "engines": {
     "node": ">=18"
   },
