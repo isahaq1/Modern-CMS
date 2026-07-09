@@ -85,12 +85,21 @@ async function main() {
     if (fs.existsSync(migrationsDir)) fs.rmSync(migrationsDir, { recursive: true, force: true });
   }
 
+  // --- Ports ---
+  const ports = await prompts(
+    [
+      { type: "text", name: "webPort", message: "Web app port", initial: "3000" },
+      { type: "text", name: "apiPort", message: "API port", initial: "4000" },
+    ],
+    { onCancel }
+  );
+
   // --- Storage ---
   const { provider } = await prompts(
     {
       type: "select",
       name: "provider",
-      message: "File storage",
+      message: "File storage (AWS S3, Azure Blob Storage, or Cloudinary)",
       choices: [
         { title: "AWS S3 (or any S3-compatible: MinIO, R2, Spaces...)", value: "s3" },
         { title: "Azure Blob Storage", value: "azure" },
@@ -143,13 +152,12 @@ async function main() {
   }
   const storageEnvLines = buildStorageEnvLines(provider, storageValues);
 
-  // --- Ports / site / admin ---
+  // --- Site / admin (necessary extras beyond what was asked for: the app needs to
+  // know its own public URLs, and the CMS needs an initial admin login) ---
   const site = await prompts(
     [
-      { type: "text", name: "webPort", message: "Web app port", initial: "3000" },
-      { type: "text", name: "apiPort", message: "API port", initial: "4000" },
-      { type: "text", name: "siteUrl", message: "Public site URL", initial: (_, values) => `http://localhost:${values.webPort}` },
-      { type: "text", name: "apiUrl", message: "API URL", initial: (_, values) => `http://localhost:${values.apiPort}` },
+      { type: "text", name: "siteUrl", message: "Public site URL", initial: `http://localhost:${ports.webPort}` },
+      { type: "text", name: "apiUrl", message: "API URL", initial: `http://localhost:${ports.apiPort}` },
       { type: "text", name: "adminEmail", message: "Admin login email", initial: "admin@example.com" },
       { type: "password", name: "adminPassword", message: "Admin login password (leave blank to generate one)" },
     ],
@@ -165,10 +173,10 @@ async function main() {
     storageProvider: provider,
     storageEnvLines,
     siteUrl: site.siteUrl,
-    apiPort: site.apiPort,
+    apiPort: ports.apiPort,
     revalidateSecret: randomSecret(),
   });
-  const webEnv = buildWebEnv({ apiUrl: site.apiUrl, siteUrl: site.siteUrl, webPort: site.webPort });
+  const webEnv = buildWebEnv({ apiUrl: site.apiUrl, siteUrl: site.siteUrl, webPort: ports.webPort });
   const rootEnv = buildRootEnv({ db, databaseUrl, storageProvider: provider, storageEnvLines });
 
   fs.writeFileSync(path.join(dest, "apps/api/.env"), apiEnv);

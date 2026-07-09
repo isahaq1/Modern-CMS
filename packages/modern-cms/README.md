@@ -38,9 +38,9 @@ npx modern-cms
 | 1 | Project directory | Must be empty or not yet exist |
 | 2 | Database engine | PostgreSQL or MySQL |
 | 3 | Database host / port / name / username / password | Builds `DATABASE_URL` and rewrites the Prisma schema's datasource for you |
-| 4 | Storage provider | AWS S3 (or S3-compatible) / Azure Blob Storage / Cloudinary |
-| 5 | Provider credentials | Endpoint/keys/bucket for S3, connection string/container for Azure, cloud name/API key/secret for Cloudinary |
-| 6 | Web app port / API port | Defaults `3000` / `4000` |
+| 4 | Web app port / API port | Defaults `3000` / `4000` |
+| 5 | Storage provider | AWS S3 (or S3-compatible) / Azure Blob Storage / Cloudinary |
+| 6 | Provider credentials | Endpoint/keys/bucket for S3, connection string/container for Azure, cloud name/API key/secret for Cloudinary |
 | 7 | Public site URL / API URL | Defaults follow whatever ports you picked |
 | 8 | Admin email / password | Leave the password blank to auto-generate one (printed once, at the end) |
 
