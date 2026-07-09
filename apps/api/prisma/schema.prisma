@@ -1,0 +1,251 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  AUTHOR
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(EDITOR)
+  createdAt    DateTime @default(now())
+  pages           Page[]           @relation("PageAuthor")
+  collectionItems CollectionItem[] @relation("CollectionItemAuthor")
+  savedBlocks     SavedBlock[]     @relation("SavedBlockAuthor")
+}
+
+model Page {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  status          PageStatus    @default(DRAFT)
+  content         Json
+  seoTitle        String?
+  seoDescription  String?
+  ogImage         String?
+  // BCP-47 language tag for this page's content ("en", "es", "ar"...). Slugs stay
+  // globally unique — localized pages get their own slug (e.g. "es/servicios") and are
+  // linked to their source page via translationOfId so a language switcher can list
+  // the whole translation group.
+  locale          String        @default("en")
+  translationOfId String?
+  translationOf   Page?         @relation("PageTranslations", fields: [translationOfId], references: [id], onDelete: SetNull)
+  translations    Page[]        @relation("PageTranslations")
+  // When set alongside status=PUBLISHED, the page only actually becomes publicly
+  // visible once this moment passes — checked lazily at request time rather than via
+  // a background job, since "is it visible" is just "status=PUBLISHED AND (no
+  // publishAt OR publishAt <= now)".
+  publishAt       DateTime?
+  noIndex         Boolean       @default(false)
+  previewToken    String        @unique @default(cuid())
+  // Denormalized plain-text extraction of `content` (see extractSearchText in
+  // packages/shared), kept in sync on every save so Postgres full-text search doesn't
+  // need to parse the JSON tree at query time.
+  searchText      String        @default("")
+  createdById     String?
+  createdBy       User?         @relation("PageAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  revisions       PageRevision[]
+}
+
+// A lightweight snapshot taken on every Save, so an editor can look back at and
+// restore an earlier version of a page. Capped and pruned in application code rather
+// than modeled here, to keep the schema simple.
+model PageRevision {
+  id        String   @id @default(cuid())
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  title     String
+  content   Json
+  createdAt DateTime @default(now())
+
+  @@index([pageId, createdAt])
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  url       String
+  mimeType  String
+  width     Int?
+  height    Int?
+  size      Int
+  // Original filename kept for search; alt text for accessibility wherever the asset
+  // is used without an explicit per-usage alt.
+  filename  String   @default("")
+  alt       String?
+  createdAt DateTime @default(now())
+}
+
+// Old URL → new URL mappings, consulted when a public path doesn't match any page or
+// collection entry — keeps inbound links alive across restructures.
+model Redirect {
+  id        String   @id @default(cuid())
+  fromPath  String   @unique
+  toPath    String
+  permanent Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SiteTheme {
+  id              String  @id @default(cuid())
+  primaryColor    String  @default("#2563eb")
+  secondaryColor  String  @default("#0f172a")
+  backgroundColor String  @default("#ffffff")
+  textColor       String  @default("#111827")
+  headingFont     String  @default("Poppins")
+  bodyFont        String  @default("Inter")
+  logoUrl         String?
+  faviconUrl      String?
+  siteName        String  @default("My Site")
+  customCss       String?
+  // Dark-mode token overrides — used only when darkModeEnabled; left blank fields fall
+  // back to sensible computed defaults (see ThemeStyleTag) rather than the light colors.
+  darkModeEnabled     Boolean @default(false)
+  primaryColorDark    String?
+  backgroundColorDark String?
+  textColorDark       String?
+  // "none" | "ga4" | "plausible" | "custom" — kept as a plain string (not a Prisma enum)
+  // since it's validated at the Zod boundary and an enum migration is heavier for a
+  // field this low-stakes.
+  analyticsProvider     String  @default("none")
+  analyticsId           String?
+  analyticsCustomScript String?
+}
+
+model NavItem {
+  id       String    @id @default(cuid())
+  label    String
+  href     String
+  order    Int       @default(0)
+  parentId String?
+  parent   NavItem?  @relation("NavItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children NavItem[] @relation("NavItemChildren")
+}
+
+// A dynamic content type — Blog, News, Events — whose items share a URL prefix
+// (`/{collection.slug}/{item.slug}`) and are listed by the "Collection List" block.
+model Collection {
+  id        String           @id @default(cuid())
+  name      String
+  slug      String           @unique
+  items     CollectionItem[]
+  createdAt DateTime         @default(now())
+}
+
+// One entry in a collection (a post, an event...). `content` is a PageNode tree edited
+// with the same visual builder as pages, so items get the full component library.
+model CollectionItem {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  slug         String
+  title        String
+  excerpt      String?
+  coverImage   String?
+  content      Json
+  status         PageStatus @default(DRAFT)
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  ogImage        String?
+  noIndex        Boolean    @default(false)
+  searchText     String     @default("")
+  createdById    String?
+  createdBy      User?      @relation("CollectionItemAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  // Mirrors Page's locale/translation pattern exactly, but scoped to items within the
+  // same collection rather than site-wide, since a "translation of" only makes sense
+  // among items sharing a collection.
+  locale          String           @default("en")
+  translationOfId String?
+  translationOf   CollectionItem?  @relation("CollectionItemTranslations", fields: [translationOfId], references: [id], onDelete: SetNull)
+  translations    CollectionItem[] @relation("CollectionItemTranslations")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@unique([collectionId, slug])
+  @@index([collectionId, status, publishedAt])
+}
+
+// Site-level sections rendered on every page: the global header above each page's own
+// content and the global footer below it. `kind` is "header" or "footer"; `content` is
+// a PageNode root tree (so a global header can be several stacked sections — utility
+// bar + header, say). Disabled rows are kept so switching off doesn't lose the layout.
+model GlobalSection {
+  id        String   @id @default(cuid())
+  kind      String   @unique
+  enabled   Boolean  @default(false)
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// A section (or whole subtree) an editor saved for reuse. Inserting a block deep-clones
+// its content with fresh node ids, so instances are independent copies (not synced).
+model SavedBlock {
+  id          String   @id @default(cuid())
+  name        String
+  content     Json
+  createdById String?
+  createdBy   User?    @relation("SavedBlockAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+}
+
+// A starter PageNode tree an editor can pick when creating a new page instead of
+// starting blank. `content` is a full root PageNode, same shape as Page.content, so
+// applying a template is just cloning it with fresh node ids (cloneWithNewIds).
+model PageTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  category  String   @default("General")
+  thumbnail String?
+  content   Json
+  createdAt DateTime @default(now())
+}
+
+// Who changed what, when — one row per successful mutating API call, captured by
+// middleware rather than per-route calls so nothing is forgotten as routes are added.
+// `action` is "METHOD /path" and `entityPath` the concrete URL hit.
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  userEmail  String?
+  action     String
+  entityPath String
+  status     Int
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userEmail, createdAt])
+}
+
+// One row per submission of any "Contact Form" block on the site. `formName` lets
+// multiple distinct forms (e.g. "Contact", "Newsletter") share one table while still
+// being filterable in the admin submissions view. `data` holds whatever fields that
+// particular form instance defined — kept schemaless since form fields are authored
+// per-component, not modeled globally.
+model FormSubmission {
+  id        String   @id @default(cuid())
+  formName  String
+  pageSlug  String
+  data      Json
+  createdAt DateTime @default(now())
+
+  @@index([formName, createdAt])
+}

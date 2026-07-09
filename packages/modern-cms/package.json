@@ -1,0 +1,37 @@
+{
+  "name": "modern-cms",
+  "version": "1.0.0",
+  "description": "Self-hosted, drag-and-drop website CMS (Next.js + Express + Prisma). Interactive installer scaffolds a full project with your choice of PostgreSQL/MySQL and AWS S3/Azure Blob/Cloudinary storage.",
+  "type": "module",
+  "bin": {
+    "modern-cms": "./bin/modern-cms.js"
+  },
+  "files": [
+    "bin",
+    "template",
+    "README.md"
+  ],
+  "keywords": [
+    "cms",
+    "nextjs",
+    "prisma",
+    "page-builder",
+    "drag-and-drop",
+    "postgresql",
+    "mysql",
+    "s3",
+    "azure",
+    "cloudinary"
+  ],
+  "author": {
+    "name": "Md Isahaq (+880 1852376598)",
+    "email": "hmisahaq01@gmail.com"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "prompts": "^2.4.2"
+  }
+}

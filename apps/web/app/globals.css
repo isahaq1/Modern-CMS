@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --theme-primary: #2563eb;
+  --theme-secondary: #0f172a;
+  --theme-bg: #ffffff;
+  --theme-text: #111827;
+  --theme-heading-font: "Poppins", sans-serif;
+  --theme-body-font: "Inter", sans-serif;
+}
+
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  font-family: var(--theme-body-font);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--theme-heading-font);
+}
+
+.pgcms-editable-selected {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+.pgcms-editable-hover:hover {
+  outline: 1px dashed #94a3b8;
+  outline-offset: -1px;
+}
+
+/* --- Modern effect utilities, driven by NodeStyle fields (see Renderer.tsx) --- */
+
+/* Glassmorphism panel — translucent frosted glass. The background only applies when
+   the node has no explicit backgroundColor of its own (inline style wins over this). */
+.pgcms-glass {
+  background-color: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid rgb(255 255 255 / 0.25);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.12);
+}
+
+/* Gradient-filled headings — colors come from --pgcms-tg-from / --pgcms-tg-to set
+   inline by the Renderer. */
+.pgcms-text-gradient h1,
+.pgcms-text-gradient h2,
+.pgcms-text-gradient h3 {
+  background-image: linear-gradient(100deg, var(--pgcms-tg-from), var(--pgcms-tg-to));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hover effects (tilt is JS-driven in useModernEffects; these three are pure CSS). */
+.pgcms-hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.pgcms-hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px -12px rgb(0 0 0 / 0.25);
+}
+.pgcms-hover-scale {
+  transition: transform 0.3s ease;
+}
+.pgcms-hover-scale:hover {
+  transform: scale(1.03);
+}
+.pgcms-hover-glow {
+  transition: box-shadow 0.3s ease;
+}
+.pgcms-hover-glow:hover {
+  /* Fallback for browsers without relative color syntax, then the themed version. */
+  box-shadow: 0 0 32px rgb(37 99 235 / 0.45);
+  box-shadow: 0 0 0 1px rgb(from var(--theme-primary) r g b / 0.4),
+    0 0 32px rgb(from var(--theme-primary) r g b / 0.45);
+}
+
+/* Animated gradient background (Hero's "animate gradient" option) — the gradient is
+   oversized and its position drifts back and forth. */
+.pgcms-animated-gradient {
+  background-size: 300% 300% !important;
+  animation: pgcms-gradient-drift 8s ease-in-out infinite;
+}
+@keyframes pgcms-gradient-drift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Marquee ticker — the track holds two copies of the items; translating it by -50%
+   loops seamlessly. Duration/direction are set inline by the component. */
+.pgcms-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.pgcms-marquee-track {
+  display: inline-flex;
+  align-items: center;
+  animation: pgcms-marquee-scroll linear infinite;
+  animation-duration: var(--pgcms-marquee-duration, 20s);
+  animation-direction: var(--pgcms-marquee-direction, normal);
+}
+.pgcms-marquee:hover .pgcms-marquee-track[data-pause-on-hover="true"] {
+  animation-play-state: paused;
+}
+@keyframes pgcms-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pgcms-marquee-track,
+  .pgcms-animated-gradient {
+    animation: none;
+  }
+}
