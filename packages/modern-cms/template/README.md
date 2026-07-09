@@ -60,7 +60,7 @@ npm run db:seed
 npm run dev
 ```
 
-> **Using yarn to install the scaffolded project itself?** `yarn install` works fine, and `npm run dev` / `db:migrate` / `db:seed` all run correctly under a yarn-installed `node_modules` (they invoke `tsx`, which doesn't type-check). The one thing to watch for: yarn's dependency hoisting can occasionally produce a duplicate `@types/express` in the tree, which shows up as spurious TypeScript errors *only* if you run `npm run build` or `tsc` directly. If that happens, running `npm install` once (even alongside your yarn workflow) resolves it — that's yarn's hoisting, not a bug in the project.
+> **Using yarn to install the scaffolded project itself?** `yarn install` works fine — `npm run dev` / `build` / `db:migrate` / `db:seed` all run correctly under a yarn-installed `node_modules`. (Earlier versions of this README blamed a duplicate `@types/express` type error on "yarn's hoisting" — that diagnosis was wrong. The real cause is that `@types/multer` depends on `@types/express@"*"`, which both npm and yarn will happily resolve to a stray v5 copy alongside the project's pinned v4, breaking `tsc`/`npm run build` under either package manager. The root `package.json`'s `overrides` + `resolutions` fields pin that nested dependency to v4 for both, so this no longer happens with a fresh install.)
 
 See [`packages/modern-cms/README.md`](packages/modern-cms/README.md) for the full prompt-by-prompt reference and configuration details.
 

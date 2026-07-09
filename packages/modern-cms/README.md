@@ -84,7 +84,7 @@ npm run dev
 
 Then open the web app at the URL you chose (default `http://localhost:3000`) and log in at `/admin` with the admin email/password from the wizard.
 
-> **Prefer yarn for the scaffolded project too?** `yarn install` works fine, and `dev`/`db:migrate`/`db:seed` all run correctly (they use `tsx`, which doesn't type-check). The one caveat: yarn's dependency hoisting can occasionally produce a duplicate `@types/express`, which shows up as spurious TypeScript errors only if you run `npm run build` or `tsc` directly — running `npm install` once resolves it.
+> **Prefer yarn for the scaffolded project too?** `yarn install` works fine, and `dev`/`build`/`db:migrate`/`db:seed` all run correctly. A stray duplicate `@types/express` (pulled in by `@types/multer`'s unpinned `"*"` dependency range) used to break `tsc`/`npm run build` under both npm and yarn — the generated `package.json` now pins it via `overrides` (npm) and `resolutions` (yarn), so a fresh install with either tool is clean.
 >
 > **Logged in with the wrong password?** The admin user is only created the *first* time `db:seed` runs — editing `.env` afterward doesn't retroactively change it. Run `npm run db:reset-admin && npm run db:seed` to delete and recreate it from the current `.env` values.
 
