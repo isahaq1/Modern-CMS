@@ -263,3 +263,5 @@ No builder-chrome changes needed — the palette, inspector, and drag-and-drop p
 
 **Dev server "running" but serving stale code** — an orphaned process may still own the port. Verify with `netstat -ano | findstr :3000` (or `:4000`) and kill the listed PID before restarting.
 
+**Web app can't reach the API (`ECONNREFUSED` from `serverGet`, homepage 404s) when running `npm run dev`** — on Windows, `tsx watch src/index.ts` (the API's dev script) can hang indefinitely without ever binding its port when spawned through `concurrently`, even though the exact same command works fine run on its own. This is fixed as of the current `apps/api/package.json` (`tsx --watch` instead of `tsx watch` — the flag form doesn't hit the issue), but if you scaffolded a project before this fix, edit `apps/api/package.json`'s `dev` script to `"tsx --watch src/index.ts"` and restart.
+

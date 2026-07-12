@@ -87,6 +87,8 @@ Then open the web app at the URL you chose (default `http://localhost:3000`) and
 > **Prefer yarn for the scaffolded project too?** `yarn install` works fine, and `dev`/`build`/`db:migrate`/`db:seed` all run correctly. A stray duplicate `@types/express` (pulled in by `@types/multer`'s unpinned `"*"` dependency range) used to break `tsc`/`npm run build` under both npm and yarn — the generated `package.json` now pins it via `overrides` (npm) and `resolutions` (yarn), so a fresh install with either tool is clean.
 >
 > **Logged in with the wrong password?** The admin user is only created the *first* time `db:seed` runs — editing `.env` afterward doesn't retroactively change it. Run `npm run db:reset-admin && npm run db:seed` to delete and recreate it from the current `.env` values.
+>
+> **Public site failing with `ECONNREFUSED` / 404s under `npm run dev` on Windows?** Fixed in v1.1.7 — `apps/api`'s dev script previously used `tsx watch`, which could hang without binding its port when launched through `concurrently` on Windows (the exact same command worked fine on its own). It now uses the equivalent `tsx --watch` flag form, which doesn't hit the issue.
 
 ## Project layout
 
