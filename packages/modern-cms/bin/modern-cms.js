@@ -40,10 +40,10 @@ function onCancel() {
 }
 
 async function main() {
-  console.log("\nmodern-cms — self-hosted drag-and-drop website CMS\n");
+  console.log("\n🚀 modern-cms — self-hosted drag-and-drop website CMS\n");
 
   const { targetDir } = await prompts(
-    { type: "text", name: "targetDir", message: "Where should the project be created?", initial: "./modern-cms-app" },
+    { type: "text", name: "targetDir", message: "📁 Where should the project be created?", initial: "./modern-cms-app" },
     { onCancel }
   );
   const dest = path.resolve(process.cwd(), targetDir);
@@ -52,19 +52,20 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`\nCopying project files into ${dest} ...`);
+  console.log(`\n📦 Copying project files into ${dest} ...`);
   copyDir(TEMPLATE_DIR, dest);
 
   // --- Database ---
+  console.log("\n🗄️  Database");
   const db = await prompts(
     [
       {
         type: "select",
         name: "engine",
-        message: "Database",
+        message: "Database engine",
         choices: [
-          { title: "PostgreSQL", value: "postgresql" },
-          { title: "MySQL", value: "mysql" },
+          { title: "🐘 PostgreSQL", value: "postgresql" },
+          { title: "🐬 MySQL", value: "mysql" },
         ],
       },
       { type: "text", name: "host", message: "Database host", initial: "localhost" },
@@ -92,6 +93,7 @@ async function main() {
   }
 
   // --- Ports ---
+  console.log("\n🔌 Ports");
   const ports = await prompts(
     [
       { type: "text", name: "webPort", message: "Web app port", initial: "3000" },
@@ -101,15 +103,16 @@ async function main() {
   );
 
   // --- Storage ---
+  console.log("\n☁️  File storage");
   const { provider } = await prompts(
     {
       type: "select",
       name: "provider",
-      message: "File storage (AWS S3, Azure Blob Storage, or Cloudinary)",
+      message: "Storage provider",
       choices: [
-        { title: "AWS S3 (or any S3-compatible: MinIO, R2, Spaces...)", value: "s3" },
-        { title: "Azure Blob Storage", value: "azure" },
-        { title: "Cloudinary", value: "cloudinary" },
+        { title: "🪣 AWS S3 (or any S3-compatible: MinIO, R2, Spaces...)", value: "s3" },
+        { title: "🔷 Azure Blob Storage", value: "azure" },
+        { title: "🌤️  Cloudinary", value: "cloudinary" },
       ],
     },
     { onCancel }
@@ -160,6 +163,7 @@ async function main() {
 
   // --- Site / admin (necessary extras beyond what was asked for: the app needs to
   // know its own public URLs, and the CMS needs an initial admin login) ---
+  console.log("\n👤 Site & admin account");
   const site = await prompts(
     [
       { type: "text", name: "siteUrl", message: "Public site URL", initial: `http://localhost:${ports.webPort}` },
@@ -190,11 +194,11 @@ async function main() {
   fs.writeFileSync(path.join(dest, ".env"), rootEnv);
 
   if (!site.adminPassword) {
-    console.log(`\nGenerated admin password: ${adminPassword}\n(save this — it's only shown once)`);
+    console.log(`\n🔑 Generated admin password: ${adminPassword}\n   (save this — it's only shown once)`);
   }
 
-  console.log("\nDone! Generated .env files for apps/api and apps/web.\n");
-  console.log("Next steps:");
+  console.log("\n✅ Done! Generated .env files for apps/api and apps/web.\n");
+  console.log("👉 Next steps:");
   console.log(`  cd ${targetDir}`);
   console.log("  npm install");
   if (usesDbPush(db.engine)) {

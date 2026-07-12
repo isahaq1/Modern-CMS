@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { env } from "./env.js";
+import { initStorage } from "./lib/storage/index.js";
 import { securityHeaders } from "./middleware/securityHeaders.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { pagesRouter } from "./routes/pages.routes.js";
@@ -60,6 +61,8 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   console.error(err);
   res.status(err.status ?? 500).json({ error: err.message ?? "Internal server error" });
 });
+
+initStorage();
 
 app.listen(env.port, () => {
   console.log(`pg-cms API listening on http://localhost:${env.port}`);
